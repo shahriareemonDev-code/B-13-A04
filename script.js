@@ -1,163 +1,105 @@
-let interviewList = [];
-let rejectList = [];
-let currentStatus = 'all-filter-btn';
+currentTab = 'all'
+const btnActive = ['bg-blue-500', 'text-white'];
+const btnInactive = ['bg-white', 'text-gray-700'];
 
-let total = document.getElementById('total-count');
-let interview = document.getElementById('interview-count');
-let reject = document.getElementById('reject-count');
+const allContainer = document.getElementById('card-container');
+const interviewSection = document.getElementById('interview-section')
+const rejectedSection = document.getElementById('rejected-section') 
 
-const allFilterBtn = document.getElementById('all-filter-btn');
-const interviewBtn = document.getElementById('interview-btn');
-const rejectBtn = document.getElementById('reject-btn');
+const emptySection = document.getElementById('empty-state')
 
-const cardContainer = document.getElementById('card-container');
-const mainContainer = document.querySelector('main');
-const filterSection = document.getElementById('filter-section');
+function toggleTab (tab) {
+ const tabs = ['all', 'interview', 'reject'];
+
+//  allContainer.classList.add('hidden')
+//  interviewSection.classList.add('hidden')
+//  rejectedSection.classList.add('hidden')
+
+ for( t of tabs) {
+    const btnName = document.getElementById('btn-' + t);
+     
+     if(t === tab) {
+        btnName.classList.remove(... btnInactive);
+        btnName.classList.add(... btnActive)
+     }
+     else{
+        btnName.classList.remove(... btnActive);
+        btnName.classList.add(... btnInactive)
+     }
+    
+ }
+
+ const pages = [allContainer,interviewSection,rejectedSection,emptySection];
 
 
-function calculateCount() {
-    total.innerText = cardContainer.children.length;
-    interview.innerText = interviewList.length;
-    reject.innerText = rejectList.length;
+ for(const section of pages) {
+    section.classList.add('hidden');
+ }
+
+ if(tab === 'all') {
+    currentTab = 'all'
+    allContainer.classList.remove('hidden')
+    if(allContainer.children.length <1) {
+      emptySection.classList.remove('hidden')
+    }
+ }
+ else if( tab === 'interview') {
+    currentTab = 'interview'
+    interviewSection.classList.remove('hidden')
+     if(interviewSection.children.length <1) {
+      emptySection.classList.remove('hidden')
+    }
+ }
+ else {
+    currentTab = 'reject'
+    rejectedSection.classList.remove('hidden')
+     if(rejectedSection.children.length <1) {
+      emptySection.classList.remove('hidden')
+    }
+ }
 }
 
-calculateCount();
+
+//total count
+
+const totalCount = document.getElementById('total-count');
+const interviewCount = document.getElementById('interview-count');
+const rejectCount = document.getElementById('reject-count');
+const jobCount = document.getElementById('job-count');
 
 
-function toggleStyle(id) {
 
-    allFilterBtn.classList.remove('bg-white','text-gray-500');
-    interviewBtn.classList.remove('bg-white','text-gray-500');
-    rejectBtn.classList.remove('bg-white','text-gray-500');
+toggleTab(currentTab)
 
-    allFilterBtn.classList.add('bg-blue-500','text-white');
-    interviewBtn.classList.add('bg-blue-500','text-white');
-    rejectBtn.classList.add('bg-blue-500','text-white');
-
-    const selected = document.getElementById(id);
-    selected.classList.remove('bg-blue-500','text-white');
-    selected.classList.add('bg-white','text-gray-500');
-
-    currentStatus = id;
-
-    if(id === 'all-filter-btn') {
-        cardContainer.classList.remove('hidden');
-        filterSection.classList.add('hidden');
+document.getElementById('main-container')
+.addEventListener('click', function(event) {
+    const card = event.target.closest('.card')
+    const status = card.querySelector('.status')
+    if(event.target.classList.contains('interviewed-btn')) {
+         status.innerText = 'Interviewed'
+     interviewSection.appendChild(card)
     }
-    else if(id === 'interview-btn') {
-        cardContainer.classList.add('hidden');
-        filterSection.classList.remove('hidden');
-        renderInterview();
+    if(event.target.classList.contains('rejected-btn')) {
+         status.innerText = 'Rejected'
+     rejectedSection.appendChild(card)
     }
-    else if(id === 'reject-btn') {
-        cardContainer.classList.add('hidden');
-        filterSection.classList.remove('hidden');
-        renderReject();
+    if(event.target.classList.contains('dlt-btn')) {
+     const parent= event.target.parentNode.parentNode.parentNode.parentNode
+     parent.removeChild(card)
+     toggleTab(currentTab)
     }
-}
-
-
-mainContainer.addEventListener('click', function(event) {
-
-    const target = event.target;
-
+updateCount()
     
-    if (target.closest('.dlt-btn')) {
-        const card = target.closest('.flex');
-        const mobileFirst = card.querySelector('.mobile-first').innerText;
 
-        interviewList = interviewList.filter(item => item.mobileFirst !== mobileFirst);
-        rejectList = rejectList.filter(item => item.mobileFirst !== mobileFirst);
 
-    
-        card.remove();
-
-        calculateCount();
-
-        if(currentStatus === 'interview-btn') renderInterview();
-        if(currentStatus === 'reject-btn') renderReject();
-    }
-
-    if(target.classList.contains('interviewed-btn')) {
-        const parent = target.closest('.flex');
-        const mobileFirst = parent.querySelector('.mobile-first').innerText;
-        const posiTion = parent.querySelector('.position').innerText;
-        const salaRy = parent.querySelector('.salary').innerText;
-        const descRip = parent.querySelector('.descrip').innerText;
-
-        parent.querySelector('.not-applied').innerText = 'INTERVIEW';
-
-        const cardInfo = { mobileFirst, posiTion, salaRy, descRip };
-
-        if(!interviewList.find(item => item.mobileFirst === mobileFirst)) {
-            interviewList.push(cardInfo);
-        }
-
-        rejectList = rejectList.filter(item => item.mobileFirst !== mobileFirst);
-
-        calculateCount();
-        if(currentStatus === 'interview-btn') renderInterview();
-        if(currentStatus === 'reject-btn') renderReject();
-    }
-
-    if(target.classList.contains('rejected-btn')) {
-        const parent = target.closest('.flex');
-        const mobileFirst = parent.querySelector('.mobile-first').innerText;
-        const posiTion = parent.querySelector('.position').innerText;
-        const salaRy = parent.querySelector('.salary').innerText;
-        const descRip = parent.querySelector('.descrip').innerText;
-
-        parent.querySelector('.not-applied').innerText = 'REJECTED';
-
-        const cardInfo = { mobileFirst, posiTion, salaRy, descRip };
-
-        if(!rejectList.find(item => item.mobileFirst === mobileFirst)) {
-            rejectList.push(cardInfo);
-        }
-
-        interviewList = interviewList.filter(item => item.mobileFirst !== mobileFirst);
-
-        calculateCount();
-        if(currentStatus === 'reject-btn') renderReject();
-        if(currentStatus === 'interview-btn') renderInterview();
-    }
 
 });
 
-function renderInterview() {
-    filterSection.innerHTML = '';
-
-    for (let item of interviewList) {
-        const div = document.createElement('div');
-        div.className = 'flex justify-between px-8 py-5 rounded-[5px] shadow-2xl';
-        div.innerHTML = `
-            <div class="space-y-6 py-5">
-                <h2 class="text-xl font-bold mobile-first">${item.mobileFirst}</h2>
-                <p class="position">${item.posiTion}</p>
-                <p class="salary">${item.salaRy}</p>
-                <button class="bg-green-500 text-white px-4 py-2 font-bold">INTERVIEW</button>
-                <p class="descrip">${item.descRip}</p>
-            </div>
-        `;
-        filterSection.appendChild(div);
-    }
+function updateCount() {
+totalCount.innerText = allContainer.children.length;
+interviewCount.innerText = interviewSection.children.length;
+rejectCount.innerText = rejectedSection.children.length;
+jobCount.innerText = `${allContainer.children.length} jobs`
 }
+updateCount()
 
-function renderReject() {
-    filterSection.innerHTML = '';
-
-    for (let item of rejectList) {
-        const div = document.createElement('div');
-        div.className = 'flex justify-between px-8 py-5 rounded-[5px] shadow-2xl';
-        div.innerHTML = `
-            <div class="space-y-6 py-5">
-                <h2 class="text-xl font-bold mobile-first">${item.mobileFirst}</h2>
-                <p class="position">${item.posiTion}</p>
-                <p class="salary">${item.salaRy}</p>
-                <button class="bg-red-500 text-white px-4 py-2 font-bold">REJECTED</button>
-                <p class="descrip">${item.descRip}</p>
-            </div>
-        `;
-        filterSection.appendChild(div);
-    }
-}
